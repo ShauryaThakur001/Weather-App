@@ -1,5 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:weatherrapp/Firebase/Auth_Service.dart';
 import 'package:weatherrapp/Pages/Auth/SignUp.dart';
+import 'package:weatherrapp/Pages/Home/Home.dart';
 
 class Loginscreen extends StatefulWidget {
   const Loginscreen({super.key});
@@ -9,28 +12,43 @@ class Loginscreen extends StatefulWidget {
 }
 
 class _LoginscreenState extends State<Loginscreen> {
-  bool isVisible = false;
+  final FirebaseAuthService _authService = FirebaseAuthService();
 
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+
+  bool isVisible = false;
+  bool isLoading = false;
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFEAF2FB),
+      backgroundColor: const Color(0xFFEAF2FB),
       appBar: AppBar(
-        backgroundColor: Color(0xFFEAF2FB), centerTitle: true, title: Text("Login")),
+        automaticallyImplyLeading: false,
+        backgroundColor: const Color(0xFFEAF2FB),
+        centerTitle: true,
+        title: const Text("Login"),
+        elevation: 0,
+      ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28,vertical: 10),
-          child: Center(
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
+          child: Form(
+            key: _formKey,
             child: Column(
-              // crossAxisAlignment: CrossAxisAlignment.center,
-              // mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // SizedBox(height: 30,),
+                const SizedBox(height: 20),
+
                 CircleAvatar(
                   radius: 50,
                   backgroundColor: Colors.blue.shade100,
@@ -40,185 +58,234 @@ class _LoginscreenState extends State<Loginscreen> {
                     size: 50,
                   ),
                 ),
-                SizedBox(height: 20),
-                Text(
+
+                const SizedBox(height: 20),
+
+                const Text(
                   "Welcome Back",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 35),
                 ),
-                SizedBox(height: 15),
+
+                const SizedBox(height: 15),
+
                 Text(
-                  "Login to check your local weather and \n    stay updated with local forecasts",
+                  "Login to check your local weather and\nstay updated with local forecasts",
+                  textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.grey.shade600, fontSize: 17),
                 ),
-                SizedBox(height: 25),
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+
+                const SizedBox(height: 30),
+
+                // EMAIL
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: const Text(
+                    "Email",
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                TextFormField(
+                  controller: emailController,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    labelText: "Enter your email",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty || !value.contains('@')) {
+                      return "Enter a valid email";
+                    }
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: 20),
+
+                // PASSWORD
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: const Text(
+                    "Password",
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                TextFormField(
+                  controller: passController,
+                  obscureText: !isVisible,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    labelText: "Enter your password",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          isVisible = !isVisible;
+                        });
+                      },
+                      icon: Icon(
+                        isVisible
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.length < 6) {
+                      return "Password must be at least 6 characters";
+                    }
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: 35),
+
+                // LOGIN BUTTON
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: isLoading
+                        ? null
+                        : () async {
+                            if (_formKey.currentState!.validate()) {
+                              setState(() => isLoading = true);
+                              try {
+                                User? user = await _authService.login(
+                                  emailController.text.trim(),
+                                  passController.text.trim(),
+                                );
+
+                                if (user != null) {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const HomePage(),
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(e.toString())),
+                                );
+                              } finally {
+                                setState(() => isLoading = false);
+                              }
+                            }
+                          },
+                    child: isLoading
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Text(
+                                "Login",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              SizedBox(width: 6),
+                              Icon(Icons.login, color: Colors.white),
+                            ],
+                          ),
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                // OR DIVIDER
+                Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        "OR",
+                        style: TextStyle(color: Colors.grey.shade600),
+                      ),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+
+                const SizedBox(height: 25),
+
+                // GOOGLE BUTTON (UI ONLY)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      elevation: 1,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: () {},
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          "assets/images/google.png",
+                          height: 20,
+                        ),
+                        const SizedBox(width: 10),
+                        const Text(
+                          "Continue with Google",
+                          style: TextStyle(fontSize: 18, color: Colors.black),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 25),
+
+                // SIGN UP
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SignUp()),
+                    );
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
                       Text(
-                        "Email",
+                        "Don't have an account?",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        "Sign Up",
                         style: TextStyle(
-                          fontSize: 17,
+                          color: Colors.blue,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 10),
-                      TextFormField(
-                        controller: emailController,
-                        decoration: InputDecoration(
-                          fillColor: Colors.white,
-                          filled: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          labelText: "Enter your email",
-                          labelStyle: TextStyle(color: Colors.grey.shade600),
-                        ),
-                        validator: (value) {
-                          if(value!.isEmpty || !value.contains('@gmail.com')){
-                            return "Enter Your Email Correctly";
-                          }
-                          return null;
-                        },
-                      ),
-
-                      SizedBox(height: 20),
-
-                      Text(
-                        "Password",
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      TextFormField(
-                        obscureText: !isVisible,
-                        controller: passController,
-                        decoration: InputDecoration(
-                          fillColor: Colors.white,
-                          filled: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          labelText: "Enter your password",
-                          labelStyle: TextStyle(color: Colors.grey.shade600),
-                          suffixIcon: IconButton(
-                            onPressed: () {
-                              setState(() {
-                                isVisible = !isVisible;
-                              });
-                            },
-                            icon: isVisible
-                                ? Icon(
-                                    Icons.visibility_off,
-                                    color: Colors.grey.shade600,
-                                  )
-                                : Icon(
-                                    Icons.visibility,
-                                    color: Colors.grey.shade600,
-                                  ),
-                          ),
-                        ),
-                        validator: (value) {
-                          if(value!.isEmpty|| value.length<5){
-                            return "Password Length should be Greater than 5";
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 40),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: Colors.blue,
-                          elevation: 5,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadiusGeometry.circular(10),
-                          ),
-                        ),
-                        onPressed: () {
-                          if(_formKey.currentState!.validate()){
-                            // Firebase Check the email etc...
-                          }
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Login",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                              ),
-                            ),
-                            SizedBox(width: 5),
-                            Icon(Icons.login, color: Colors.white),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 25),
-                        child: Row(
-                          children: [
-                            Expanded(child: Divider(thickness: 1)),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
-                              child: Text("OR",style: TextStyle(
-                                color: Colors.grey.shade600
-                              ),),
-                            ),
-                            Expanded(child: Divider(thickness: 1)),
-                          ],
-                        ),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: Colors.white,
-                          elevation: 1,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadiusGeometry.circular(10),
-                          ),
-                        ),
-                        onPressed: () {},
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              height: 20,
-                              width: 20,
-                              child: Image(image: AssetImage("assets/images/google.png"))),
-                              SizedBox(width: 10,),
-                            Text(
-                              "Continue With Google",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 18,
-                              ),
-                            ),
-                            SizedBox(width: 5),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 25,),
-                      TextButton(onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=>SignUp()));
-                      }, child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("Don't have an account? ",style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 15
-                          ),),
-                          Text(" Sign Up",style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800
-                          ),)
-                        ],
-                      ))
                     ],
                   ),
                 ),
