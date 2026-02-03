@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:weatherrapp/Firebase/Auth_Service.dart';
+import 'package:weatherrapp/Firebase/Social_Login_Service.dart';
 import 'package:weatherrapp/Pages/Auth/SignUp.dart';
 import 'package:weatherrapp/Pages/Home/Home.dart';
 
@@ -13,6 +14,7 @@ class Loginscreen extends StatefulWidget {
 
 class _LoginscreenState extends State<Loginscreen> {
   final FirebaseAuthService _authService = FirebaseAuthService();
+  final SocialLoginService _socialLoginService = SocialLoginService();
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passController = TextEditingController();
@@ -37,8 +39,8 @@ class _LoginscreenState extends State<Loginscreen> {
         automaticallyImplyLeading: false,
         backgroundColor: const Color(0xFFEAF2FB),
         centerTitle: true,
-        title: const Text("Login"),
         elevation: 0,
+        title: const Text("Login"),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -84,9 +86,7 @@ class _LoginscreenState extends State<Loginscreen> {
                     style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 TextFormField(
                   controller: emailController,
                   decoration: InputDecoration(
@@ -115,9 +115,7 @@ class _LoginscreenState extends State<Loginscreen> {
                     style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 TextFormField(
                   controller: passController,
                   obscureText: !isVisible,
@@ -129,17 +127,17 @@ class _LoginscreenState extends State<Loginscreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     suffixIcon: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          isVisible = !isVisible;
-                        });
-                      },
                       icon: Icon(
                         isVisible
                             ? Icons.visibility_off
                             : Icons.visibility,
                         color: Colors.grey.shade600,
                       ),
+                      onPressed: () {
+                        setState(() {
+                          isVisible = !isVisible;
+                        });
+                      },
                     ),
                   ),
                   validator: (value) {
@@ -152,7 +150,7 @@ class _LoginscreenState extends State<Loginscreen> {
 
                 const SizedBox(height: 35),
 
-                // LOGIN BUTTON
+                // EMAIL LOGIN BUTTON
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -175,11 +173,12 @@ class _LoginscreenState extends State<Loginscreen> {
                                 );
 
                                 if (user != null) {
-                                  Navigator.pushReplacement(
+                                  Navigator.pushAndRemoveUntil(
                                     context,
                                     MaterialPageRoute(
                                       builder: (_) => const HomePage(),
                                     ),
+                                    (_) => false,
                                   );
                                 }
                               } catch (e) {
@@ -192,9 +191,7 @@ class _LoginscreenState extends State<Loginscreen> {
                             }
                           },
                     child: isLoading
-                        ? const CircularProgressIndicator(
-                            color: Colors.white,
-                          )
+                        ? const CircularProgressIndicator(color: Colors.white)
                         : Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: const [
@@ -231,7 +228,7 @@ class _LoginscreenState extends State<Loginscreen> {
 
                 const SizedBox(height: 25),
 
-                // GOOGLE BUTTON (UI ONLY)
+                // GOOGLE LOGIN BUTTON
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -243,7 +240,32 @@ class _LoginscreenState extends State<Loginscreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: isLoading
+                        ? null
+                        : () async {
+                            setState(() => isLoading = true);
+                            try {
+                              UserCredential? credential =
+                                  await _socialLoginService
+                                      .signInWithGoogle();
+
+                              if (credential != null) {
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const HomePage(),
+                                  ),
+                                  (_) => false,
+                                );
+                              }
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(e.toString())),
+                              );
+                            } finally {
+                              setState(() => isLoading = false);
+                            }
+                          },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -254,7 +276,8 @@ class _LoginscreenState extends State<Loginscreen> {
                         const SizedBox(width: 10),
                         const Text(
                           "Continue with Google",
-                          style: TextStyle(fontSize: 18, color: Colors.black),
+                          style:
+                              TextStyle(fontSize: 18, color: Colors.black),
                         ),
                       ],
                     ),

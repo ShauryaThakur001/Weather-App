@@ -10,18 +10,20 @@ class SocialLoginService {
 
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser =
-          await _googleSignIn.signIn();
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) return null;
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
-      final AuthCredential credential =
-          GoogleAuthProvider.credential(
+      final AuthCredential credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
+        accessToken: googleAuth.accessToken,
       );
+
+      print("ID TOKEN: ${googleAuth.idToken}");
+      print("ACCESS TOKEN: ${googleAuth.accessToken}");
+
 
       return await _auth.signInWithCredential(credential);
     } catch (e) {
