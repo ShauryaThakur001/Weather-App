@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:weatherrapp/Pages/Auth/SignUp.dart';
 
 class Loginscreen extends StatefulWidget {
   const Loginscreen({super.key});
@@ -18,11 +19,12 @@ class _LoginscreenState extends State<Loginscreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: Colors.white60,
-      appBar: AppBar(centerTitle: true, title: Text("Login")),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white, centerTitle: true, title: Text("Login")),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(28.0),
+          padding: const EdgeInsets.symmetric(horizontal: 28,vertical: 10),
           child: Center(
             child: Column(
               // crossAxisAlignment: CrossAxisAlignment.center,
@@ -38,17 +40,17 @@ class _LoginscreenState extends State<Loginscreen> {
                     size: 50,
                   ),
                 ),
-                SizedBox(height: 30),
+                SizedBox(height: 20),
                 Text(
                   "Welcome Back",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 35),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 15),
                 Text(
                   "Login to check your local weather and \n    stay updated with local forecasts",
                   style: TextStyle(color: Colors.grey.shade600, fontSize: 17),
                 ),
-                SizedBox(height: 30),
+                SizedBox(height: 25),
                 Form(
                   key: _formKey,
                   child: Column(
@@ -71,6 +73,12 @@ class _LoginscreenState extends State<Loginscreen> {
                           labelText: "Enter your email",
                           labelStyle: TextStyle(color: Colors.grey.shade600),
                         ),
+                        validator: (value) {
+                          if(value!.isEmpty || !value.contains('@gmail.com')){
+                            return "Enter Your Email Correctly";
+                          }
+                          return null;
+                        },
                       ),
 
                       SizedBox(height: 20),
@@ -109,38 +117,104 @@ class _LoginscreenState extends State<Loginscreen> {
                                   ),
                           ),
                         ),
+                        validator: (value) {
+                          if(value!.isEmpty|| value.length<5){
+                            return "Password Length should be Greater than 5";
+                          }
+                          return null;
+                        },
                       ),
-                      SizedBox(height: 40,),
+                      SizedBox(height: 40),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           padding: EdgeInsets.symmetric(vertical: 16),
                           backgroundColor: Colors.blue,
                           elevation: 5,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadiusGeometry.circular(10)
-                          )
+                            borderRadius: BorderRadiusGeometry.circular(10),
+                          ),
                         ),
-                        onPressed: (){
-
+                        onPressed: () {
+                          if(_formKey.currentState!.validate()){
+                            // Firebase Check the email etc...
+                          }
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Login",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                              ),
+                            ),
+                            SizedBox(width: 5),
+                            Icon(Icons.login, color: Colors.white),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 25),
+                        child: Row(
+                          children: [
+                            Expanded(child: Divider(thickness: 1)),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              child: Text("OR",style: TextStyle(
+                                color: Colors.grey.shade600
+                              ),),
+                            ),
+                            Expanded(child: Divider(thickness: 1)),
+                          ],
+                        ),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: Colors.white,
+                          elevation: 1,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadiusGeometry.circular(10),
+                          ),
+                        ),
+                        onPressed: () {},
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              height: 20,
+                              width: 20,
+                              child: Image(image: AssetImage("assets/images/google.png"))),
+                              SizedBox(width: 10,),
+                            Text(
+                              "Continue With Google",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 18,
+                              ),
+                            ),
+                            SizedBox(width: 5),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 25,),
+                      TextButton(onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=>SignUp()));
                       }, child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text("Login",style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18
+                          Text("Don't have an account? ",style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 15
                           ),),
-                          SizedBox(width: 5,),
-                          Icon(Icons.login,color: Colors.white,)
+                          Text(" Sign Up",style: TextStyle(
+                            color: Colors.blue,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800
+                          ),)
                         ],
-                      )),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Divider(height: 10,),
-                          Text("OR"),
-                          Divider()
-                        ],
-                      )
+                      ))
                     ],
                   ),
                 ),
