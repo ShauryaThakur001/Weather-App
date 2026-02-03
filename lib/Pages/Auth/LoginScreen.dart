@@ -19,9 +19,9 @@ class _LoginscreenState extends State<Loginscreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFEAF2FB),
       appBar: AppBar(
-        backgroundColor: Colors.white, centerTitle: true, title: Text("Login")),
+        backgroundColor: Color(0xFFEAF2FB), centerTitle: true, title: Text("Login")),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 28,vertical: 10),
@@ -67,6 +67,8 @@ class _LoginscreenState extends State<Loginscreen> {
                       TextFormField(
                         controller: emailController,
                         decoration: InputDecoration(
+                          fillColor: Colors.white,
+                          filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -95,6 +97,8 @@ class _LoginscreenState extends State<Loginscreen> {
                         obscureText: !isVisible,
                         controller: passController,
                         decoration: InputDecoration(
+                          fillColor: Colors.white,
+                          filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
