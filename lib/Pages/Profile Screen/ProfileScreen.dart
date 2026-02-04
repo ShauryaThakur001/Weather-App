@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:weatherrapp/Firebase/Auth_Service.dart';
 import 'package:weatherrapp/Pages/Auth/LoginScreen.dart';
 import 'package:weatherrapp/Providers/ThemeProvider.dart';
+import 'package:weatherrapp/Services/Notification_Permission_Service.dart';
 
 class SettingScreen extends StatefulWidget {
   const SettingScreen({super.key});
@@ -25,13 +26,15 @@ class _SettingScreenState extends State<SettingScreen> {
     final themeProvider = context.watch<ThemeProvider>();
 
     return Scaffold(
-      backgroundColor:
-          themeProvider.isDark ? Colors.grey.shade900 : Colors.white,
+      backgroundColor: themeProvider.isDark
+          ? Colors.grey.shade900
+          : Colors.white,
       appBar: AppBar(
         centerTitle: true,
         elevation: 3,
-        backgroundColor:
-          themeProvider.isDark ? Colors.grey.shade800 : Colors.white,
+        backgroundColor: themeProvider.isDark
+            ? Colors.grey.shade800
+            : Colors.white,
         surfaceTintColor: Colors.white,
         title: const Text("Settings"),
       ),
@@ -41,7 +44,6 @@ class _SettingScreenState extends State<SettingScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               /// ---------------- Appearance & Alerts ----------------
               const Padding(
                 padding: EdgeInsets.only(left: 10, top: 22, bottom: 6),
@@ -55,15 +57,27 @@ class _SettingScreenState extends State<SettingScreen> {
                 icon: Icons.dark_mode,
                 title: "Dark Mode",
                 value: themeProvider.isDark,
-                onChanged: (_) =>
-                    context.read<ThemeProvider>().toggleTheme(),
+                onChanged: (_) => context.read<ThemeProvider>().toggleTheme(),
               ),
 
               _switchTile(
                 icon: Icons.notifications,
                 title: "Notifications",
                 value: isNotification,
-                onChanged: (v) => setState(() => isNotification = v),
+                onChanged: (value) async {
+                  if (value) {
+                    bool granted =
+                        await NotificationPermissionService.requestPermission();
+
+                    if (granted) {
+                      setState(() => isNotification = true);
+                    } else {
+                      setState(() => isNotification = false);
+                    }
+                  } else {
+                    setState(() => isNotification = false);
+                  }
+                },
               ),
 
               _switchTile(
@@ -132,8 +146,8 @@ class _SettingScreenState extends State<SettingScreen> {
               _simpleTile(
                 icon: Icons.person,
                 title: "Edit Profile",
-                titleColor: themeProvider.isDark?Colors.white:Colors.black,
-                iconColor: themeProvider.isDark?Colors.white:Colors.black
+                titleColor: themeProvider.isDark ? Colors.white : Colors.black,
+                iconColor: themeProvider.isDark ? Colors.white : Colors.black,
               ),
 
               GestureDetector(
@@ -142,9 +156,7 @@ class _SettingScreenState extends State<SettingScreen> {
                   if (!mounted) return;
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const Loginscreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const Loginscreen()),
                   );
                 },
                 child: _simpleTile(
@@ -164,9 +176,24 @@ class _SettingScreenState extends State<SettingScreen> {
                 ),
               ),
 
-              _simpleTile(icon: Icons.help, title: "Help Center",iconColor: themeProvider.isDark?Colors.white:Colors.black,titleColor: themeProvider.isDark?Colors.white:Colors.black),
-              _simpleTile(icon: Icons.policy, title: "Privacy Policy",iconColor: themeProvider.isDark?Colors.white:Colors.black,titleColor: themeProvider.isDark?Colors.white:Colors.black),
-              _simpleTile(icon: Icons.info_rounded, title: "About",iconColor: themeProvider.isDark?Colors.white:Colors.black,titleColor: themeProvider.isDark?Colors.white:Colors.black),
+              _simpleTile(
+                icon: Icons.help,
+                title: "Help Center",
+                iconColor: themeProvider.isDark ? Colors.white : Colors.black,
+                titleColor: themeProvider.isDark ? Colors.white : Colors.black,
+              ),
+              _simpleTile(
+                icon: Icons.policy,
+                title: "Privacy Policy",
+                iconColor: themeProvider.isDark ? Colors.white : Colors.black,
+                titleColor: themeProvider.isDark ? Colors.white : Colors.black,
+              ),
+              _simpleTile(
+                icon: Icons.info_rounded,
+                title: "About",
+                iconColor: themeProvider.isDark ? Colors.white : Colors.black,
+                titleColor: themeProvider.isDark ? Colors.white : Colors.black,
+              ),
 
               const SizedBox(height: 30),
 
@@ -246,10 +273,7 @@ Widget _simpleTile({
     contentPadding: const EdgeInsets.symmetric(horizontal: 10),
     visualDensity: const VisualDensity(vertical: 1.2),
     leading: Icon(icon, color: iconColor),
-    title: Text(
-      title,
-      style: TextStyle(fontSize: 18, color: titleColor),
-    ),
+    title: Text(title, style: TextStyle(fontSize: 18, color: titleColor)),
     trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 18),
   );
 }
@@ -298,10 +322,7 @@ Widget unitToggle({
   );
 }
 
-Widget _toggleItem({
-  required String text,
-  required bool selected,
-}) {
+Widget _toggleItem({required String text, required bool selected}) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
     decoration: BoxDecoration(
