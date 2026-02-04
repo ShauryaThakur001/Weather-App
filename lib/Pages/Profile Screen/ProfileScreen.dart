@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:weatherrapp/Firebase/Auth_Service.dart';
 import 'package:weatherrapp/Pages/Auth/LoginScreen.dart';
 import 'package:weatherrapp/Providers/ThemeProvider.dart';
+import 'package:weatherrapp/Services/Location_Permission_Service.dart';
 import 'package:weatherrapp/Services/Notification_Permission_Service.dart';
 
 class SettingScreen extends StatefulWidget {
@@ -73,6 +74,20 @@ class _SettingScreenState extends State<SettingScreen> {
                       setState(() => isNotification = true);
                     } else {
                       setState(() => isNotification = false);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text(
+                            "Enable notifications from app settings to get alerts",
+                          ),
+                          action: SnackBarAction(
+                            label: "OPEN",
+                            onPressed: () {
+                              NotificationPermissionService.openSettings();
+                            },
+                          ),
+                        ),
+                      );
                     }
                   } else {
                     setState(() => isNotification = false);
@@ -84,7 +99,34 @@ class _SettingScreenState extends State<SettingScreen> {
                 icon: Icons.location_on,
                 title: "Location Access",
                 value: isLocationAccess,
-                onChanged: (v) => setState(() => isLocationAccess = v),
+                onChanged: (value) async {
+                  if (value) {
+                    bool granted =
+                        await LocationPermissionService.requestPermission();
+
+                    if (granted) {
+                      setState(() => isLocationAccess = true);
+                    } else {
+                      setState(() => isLocationAccess = false);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text(
+                            "Enable location services to get local weather",
+                          ),
+                          action: SnackBarAction(
+                            label: "SETTINGS",
+                            onPressed: () {
+                              LocationPermissionService.openSettings();
+                            },
+                          ),
+                        ),
+                      );
+                    }
+                  } else {
+                    setState(() => isLocationAccess = false);
+                  }
+                },
               ),
 
               /// ---------------- Units ----------------
