@@ -58,10 +58,10 @@ class _LocationscreenState extends State<Locationscreen> {
                 ),
                 SizedBox(height: 15),
                 LocationWidget(city: 'London', weather: 'Cloudy', degree: '19', icon: Icons.cloud, color: Colors.blue,),
-                LocationWidget(city: "New York", weather: "Sunny", degree: "24", icon: Icons.sunny, color: Colors.yellow),
-                LocationWidget(city: "Tokyo", weather: "Rainy", degree: "21", icon: Icons.thunderstorm, color: Colors.blue),
-                LocationWidget(city: "Paris", weather: "Clear Night", degree: "14", icon: Icons.cloud, color: Colors.grey),
-                LocationWidget(city: "Sydney", weather: "Few Clouds", degree: "28", icon: Icons.sunny, color: Colors.orange)
+                LocationWidget(city: "New York", weather: "Sunny", degree: "24", icon: Icons.wb_sunny, color: Colors.yellow),
+                LocationWidget(city: "Tokyo", weather: "Rainy", degree: "21", icon: Icons.grain, color: Colors.blue),
+                LocationWidget(city: "Paris", weather: "Clear Night", degree: "14", icon: Icons.nights_stay, color: Colors.grey),
+                LocationWidget(city: "Sydney", weather: "Few Clouds", degree: "28", icon: Icons.wb_cloudy, color: Colors.orange)
               ],
             ),
           ),
