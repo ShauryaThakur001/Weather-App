@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:weatherrapp/Pages/Auth/LoginScreen.dart';
+import 'package:weatherrapp/Pages/Bottom%20Navigation%20Screen/BottomNavigationScreen.dart';
 import 'package:weatherrapp/Pages/Home/Home.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -28,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (user != null) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const HomePage()),
+        MaterialPageRoute(builder: (_) => const Bottomnavigationscreen()),
       );
     } else {
       Navigator.pushReplacement(

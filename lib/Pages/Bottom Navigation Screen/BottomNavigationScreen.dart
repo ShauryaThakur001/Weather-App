@@ -15,7 +15,7 @@ class _BottomnavigationscreenState extends State<Bottomnavigationscreen> {
 
   int index=0;
 
-  List <>screens=[
+  List <Widget>screens=[
     HomePage(),
     Locationscreen(),
     Radarscreen(),
@@ -24,18 +24,38 @@ class _BottomnavigationscreenState extends State<Bottomnavigationscreen> {
   
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      items: ,
-      selectedItemColor: Colors.blue,
-      unselectedItemColor: Colors.grey,
-      currentIndex: index,
-      type: BottomNavigationBarType.fixed,
-      onTap: (value) {
-        setState(() {
-          index=value;
-        });
-      },
-
-      );
+    return Scaffold(
+      body: screens[index],
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: "Home",
+            ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.location_on),
+            label: "Locations",
+            ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map_sharp),
+            label: "Map",
+            ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: "Settings",
+            ),
+        ],
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        currentIndex: index,
+        type: BottomNavigationBarType.fixed,
+        onTap: (value) {
+          setState(() {
+            index=value;
+          });
+        },
+      
+        ),
+    );
   }
 }
