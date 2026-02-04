@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:weatherrapp/Pages/Auth/LoginScreen.dart';
+import 'package:weatherrapp/Pages/Home/Home.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -8,10 +11,31 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+
   @override
   void initState() {
     super.initState();
-    // navigation logic later
+    _navigateToNextScreen();
+  }
+
+  Future<void> _navigateToNextScreen() async {
+    await Future.delayed(const Duration(seconds: 3));
+
+    if (!mounted) return;
+
+    final User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const Loginscreen()),
+      );
+    }
   }
 
   @override
@@ -34,7 +58,7 @@ class _SplashScreenState extends State<SplashScreen> {
           padding: const EdgeInsets.all(28.0),
           child: Column(
             children: [
-              // 🔹 CENTER IMAGE
+              // CENTER IMAGE
               Expanded(
                 child: Center(
                   child: Image.asset(
@@ -44,16 +68,14 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
               ),
 
-              // 🔹 BOTTOM CONTENT
+              // BOTTOM CONTENT
               Column(
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   const Text(
                     "Weatherly",
                     style: TextStyle(
                       fontSize: 45,
                       fontWeight: FontWeight.w900,
-                      color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 10),
