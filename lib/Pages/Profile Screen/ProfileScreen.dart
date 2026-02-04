@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:weatherrapp/Firebase/Auth_Service.dart';
+import 'package:weatherrapp/Pages/Auth/LoginScreen.dart';
+import 'package:weatherrapp/Providers/ThemeProvider.dart';
 
-class Profilescreen extends StatefulWidget {
-  const Profilescreen({super.key});
+class SettingScreen extends StatefulWidget {
+  const SettingScreen({super.key});
 
   @override
-  State<Profilescreen> createState() => _ProfilescreenState();
+  State<SettingScreen> createState() => _SettingScreenState();
 }
 
-class _ProfilescreenState extends State<Profilescreen> {
-  bool isDark = false;
+class _SettingScreenState extends State<SettingScreen> {
+  final FirebaseAuthService _authService = FirebaseAuthService();
+
   bool isNotification = false;
   bool isLocationAccess = false;
 
@@ -17,12 +22,16 @@ class _ProfilescreenState extends State<Profilescreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor:
+          themeProvider.isDark ? Colors.grey.shade900 : Colors.white,
       appBar: AppBar(
         centerTitle: true,
         elevation: 3,
-        backgroundColor: Colors.white,
+        backgroundColor:
+          themeProvider.isDark ? Colors.grey.shade800 : Colors.white,
         surfaceTintColor: Colors.white,
         title: const Text("Settings"),
       ),
@@ -45,8 +54,9 @@ class _ProfilescreenState extends State<Profilescreen> {
               _switchTile(
                 icon: Icons.dark_mode,
                 title: "Dark Mode",
-                value: isDark,
-                onChanged: (v) => setState(() => isDark = v),
+                value: themeProvider.isDark,
+                onChanged: (_) =>
+                    context.read<ThemeProvider>().toggleTheme(),
               ),
 
               _switchTile(
@@ -100,7 +110,10 @@ class _ProfilescreenState extends State<Profilescreen> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: const [
-                    Text("English", style: TextStyle(color: Colors.grey)),
+                    Text(
+                      "English",
+                      style: TextStyle(color: Colors.grey, fontSize: 15),
+                    ),
                     SizedBox(width: 6),
                     Icon(Icons.arrow_forward_ios_rounded, size: 16),
                   ],
@@ -119,13 +132,27 @@ class _ProfilescreenState extends State<Profilescreen> {
               _simpleTile(
                 icon: Icons.person,
                 title: "Edit Profile",
+                titleColor: themeProvider.isDark?Colors.white:Colors.black,
+                iconColor: themeProvider.isDark?Colors.white:Colors.black
               ),
 
-              _simpleTile(
-                icon: Icons.logout,
-                title: "Sign Out",
-                titleColor: Colors.red,
-                iconColor: Colors.red,
+              GestureDetector(
+                onTap: () async {
+                  await _authService.logOut();
+                  if (!mounted) return;
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const Loginscreen(),
+                    ),
+                  );
+                },
+                child: _simpleTile(
+                  icon: Icons.logout,
+                  title: "Sign Out",
+                  titleColor: Colors.red,
+                  iconColor: Colors.red,
+                ),
               ),
 
               /// ---------------- Support ----------------
@@ -137,28 +164,29 @@ class _ProfilescreenState extends State<Profilescreen> {
                 ),
               ),
 
-              _simpleTile(icon: Icons.help, title: "Help Center"),
-              _simpleTile(icon: Icons.policy, title: "Privacy Policy"),
-              _simpleTile(icon: Icons.info_rounded, title: "About"),
+              _simpleTile(icon: Icons.help, title: "Help Center",iconColor: themeProvider.isDark?Colors.white:Colors.black,titleColor: themeProvider.isDark?Colors.white:Colors.black),
+              _simpleTile(icon: Icons.policy, title: "Privacy Policy",iconColor: themeProvider.isDark?Colors.white:Colors.black,titleColor: themeProvider.isDark?Colors.white:Colors.black),
+              _simpleTile(icon: Icons.info_rounded, title: "About",iconColor: themeProvider.isDark?Colors.white:Colors.black,titleColor: themeProvider.isDark?Colors.white:Colors.black),
 
               const SizedBox(height: 30),
 
               Center(
                 child: Column(
-                  children: [
-                    Text("Version 1.0.0 (Build 108)",style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 15
-                    ),),
-                    Text("© 2026 WeatherApp Inc.",style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 15
-                    ),),
-                    
+                  children: const [
+                    Text(
+                      "Version 1.0.0  (Build 108)",
+                      style: TextStyle(color: Colors.grey, fontSize: 16),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      "© 2026 WeatherApp Inc.",
+                      style: TextStyle(color: Colors.grey, fontSize: 15),
+                    ),
                   ],
                 ),
               ),
-              SizedBox(height: 30,)
+
+              const SizedBox(height: 30),
             ],
           ),
         ),
@@ -176,9 +204,9 @@ Widget _switchTile({
   required Function(bool) onChanged,
 }) {
   return ListTile(
-    minVerticalPadding: 14, // ⬆️ KEY FIX
+    minVerticalPadding: 14,
     contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-    visualDensity: const VisualDensity(vertical: 1.2), // ⬆️ more air
+    visualDensity: const VisualDensity(vertical: 1.2),
     leading: _iconBox(icon),
     title: Text(title, style: const TextStyle(fontSize: 18)),
     trailing: Switch(

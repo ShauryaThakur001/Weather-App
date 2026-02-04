@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:weatherrapp/Firebase/Auth_Service.dart';
 import 'package:weatherrapp/Firebase/Social_Login_Service.dart';
 import 'package:weatherrapp/Pages/Auth/SignUp.dart';
+import 'package:weatherrapp/Pages/Bottom%20Navigation%20Screen/BottomNavigationScreen.dart';
 import 'package:weatherrapp/Pages/Home/Home.dart';
 
 class Loginscreen extends StatefulWidget {
@@ -176,7 +177,7 @@ class _LoginscreenState extends State<Loginscreen> {
                                   Navigator.pushAndRemoveUntil(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) => const HomePage(),
+                                      builder: (_) => const Bottomnavigationscreen(),
                                     ),
                                     (_) => false,
                                   );
@@ -253,7 +254,7 @@ class _LoginscreenState extends State<Loginscreen> {
                                 Navigator.pushAndRemoveUntil(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const HomePage(),
+                                    builder: (_) => const Bottomnavigationscreen(),
                                   ),
                                   (_) => false,
                                 );

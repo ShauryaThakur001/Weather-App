@@ -38,6 +38,7 @@ dependencies:
   http: 
   firebase_auth: ^6.1.4
   google_sign_in: ^5.4.4
+  provider: ^6.1.5+1
 
 
 dev_dependencies:
