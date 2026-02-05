@@ -12,10 +12,15 @@ class Locationscreen extends StatefulWidget {
 
 class _LocationscreenState extends State<Locationscreen> {
   final FirestoreService _firestoreService = FirestoreService();
-  final WeatherService _weatherService = WeatherService('f011cca49027075b4b1357f7431ff529');
+  final WeatherService _weatherService = WeatherService(
+    'f011cca49027075b4b1357f7431ff529',
+  );
 
   final TextEditingController cityController = TextEditingController();
   final TextEditingController searchController = TextEditingController();
+
+  /// ✅ ADDED
+  List<String> filteredCities = [];
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +45,11 @@ class _LocationscreenState extends State<Locationscreen> {
 
           final cityList = snapshot.data ?? [];
 
+          /// ✅ INITIALIZE FILTER ON FIRST LOAD
+          if (searchController.text.isEmpty) {
+            filteredCities = cityList;
+          }
+
           if (cityList.isEmpty) {
             return Center(
               child: Text(
@@ -55,81 +65,108 @@ class _LocationscreenState extends State<Locationscreen> {
               children: [
                 TextField(
                   controller: searchController,
+                  onChanged: (value) {
+                    setState(() {
+                      filteredCities = cityList
+                          .where(
+                            (city) => city
+                                .toLowerCase()
+                                .contains(value.toLowerCase()),
+                          )
+                          .toList();
+                    });
+                  },
                   decoration: InputDecoration(
                     fillColor: Colors.white,
                     filled: true,
-                    prefixIcon: Icon(Icons.search,color: Colors.grey,size: 25,),
-                    hintText: "Search City",
-                    hintStyle: TextStyle(
-                      color: Colors.grey.shade600
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: Colors.grey,
+                      size: 25,
                     ),
+                    hintText: "Search City",
+                    hintStyle: TextStyle(color: Colors.grey.shade600),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none
-                    )
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                 ),
-                SizedBox(height: 20,),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: cityList.length,
-                    itemBuilder: (context, index) {
-                      final cityName = cityList[index];
-                  
-                      return FutureBuilder<Weathermodel>(
-                        future: _weatherService.getWeather(cityName),
-                        builder: (context, snapshot) {
-                          // ⏳ Loading
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              child: Center(child: CircularProgressIndicator()),
+                const SizedBox(height: 20),
+
+                /// ✅ NO CITY FOUND AFTER SEARCH
+                if (filteredCities.isEmpty)
+                  Center(
+                    child: Text(
+                      "No city found",
+                      style: TextStyle(
+                        fontSize: 22,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: filteredCities.length,
+                      itemBuilder: (context, index) {
+                        final cityName = filteredCities[index];
+
+                        return FutureBuilder<Weathermodel>(
+                          future: _weatherService.getWeather(cityName),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 12),
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            }
+
+                            if (snapshot.hasError || !snapshot.hasData) {
+                              return const SizedBox();
+                            }
+
+                            final weather = snapshot.data!;
+
+                            return Dismissible(
+                              key: ValueKey(weather.cityName),
+                              direction: DismissDirection.endToStart,
+                              background: Container(
+                                alignment: Alignment.centerRight,
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 20),
+                                color: Colors.red,
+                                child: const Icon(
+                                  Icons.delete,
+                                  color: Colors.white,
+                                  size: 30,
+                                ),
+                              ),
+                              confirmDismiss: (direction) async {
+                                await _firestoreService.removeCity(
+                                  weather.cityName,
+                                );
+                                return true;
+                              },
+                              child: LocationWidget(
+                                city: weather.cityName,
+                                weather: weather.mainCondition,
+                                degree:
+                                    weather.temperature.toStringAsFixed(0),
+                                icon:
+                                    _getWeatherIcon(weather.mainCondition),
+                                color:
+                                    _getWeatherColor(weather.mainCondition),
+                              ),
                             );
-                          }
-                  
-                          // ❌ Error → show nothing
-                          if (snapshot.hasError || !snapshot.hasData) {
-                            return const SizedBox();
-                          }
-                  
-                          final weather = snapshot.data!;
-                  
-                          return Dismissible(
-                            key: ValueKey(weather.cityName),
-                            direction: DismissDirection.endToStart,
-                  
-                            /// 🟥 DELETE BACKGROUND
-                            background: Container(
-                              alignment: Alignment.centerRight,
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              color: Colors.red,
-                              child: const Icon(Icons.delete,
-                                  color: Colors.white, size: 30),
-                            ),
-                  
-                            /// 🗑 DELETE LOGIC (NO RED SCREEN LAG)
-                            confirmDismiss: (direction) async {
-                              await _firestoreService
-                                  .removeCity(weather.cityName);
-                              return true;
-                            },
-                  
-                            child: LocationWidget(
-                              city: weather.cityName,
-                              weather: weather.mainCondition,
-                              degree:
-                                  weather.temperature.toStringAsFixed(0),
-                              icon: _getWeatherIcon(weather.mainCondition),
-                              color:
-                                  _getWeatherColor(weather.mainCondition),
-                            ),
-                          );
-                        },
-                      );
-                    },
+                          },
+                        );
+                      },
+                    ),
                   ),
-                ),
               ],
             ),
           );
@@ -145,7 +182,6 @@ class _LocationscreenState extends State<Locationscreen> {
     );
   }
 
-  /// 🌍 ADD CITY DIALOG (VALIDATION INCLUDED)
   void _showAddCityDialog() {
     showDialog(
       context: context,
@@ -153,29 +189,22 @@ class _LocationscreenState extends State<Locationscreen> {
         title: const Text("Add City"),
         content: TextField(
           controller: cityController,
-          decoration: const InputDecoration(
-            hintText: "Enter city name",
-          ),
+          decoration: const InputDecoration(hintText: "Enter city name"),
         ),
         actions: [
           TextButton(
             onPressed: () async {
               final city = cityController.text.trim();
-
               if (city.isEmpty) return;
 
               try {
-                // ✅ Validate city first
                 await _weatherService.getWeather(city);
-
                 await _firestoreService.addCity(city);
                 cityController.clear();
                 Navigator.pop(context);
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("City not found"),
-                  ),
+                  const SnackBar(content: Text("City not found")),
                 );
               }
             },
@@ -186,7 +215,6 @@ class _LocationscreenState extends State<Locationscreen> {
     );
   }
 
-  /// 🌦 ICON LOGIC
   IconData _getWeatherIcon(String condition) {
     switch (condition.toLowerCase()) {
       case 'clear':
@@ -200,7 +228,6 @@ class _LocationscreenState extends State<Locationscreen> {
     }
   }
 
-  /// 🎨 COLOR LOGIC
   MaterialColor _getWeatherColor(String condition) {
     switch (condition.toLowerCase()) {
       case 'clear':
@@ -215,7 +242,6 @@ class _LocationscreenState extends State<Locationscreen> {
   }
 }
 
-/// 📍 LOCATION CARD
 class LocationWidget extends StatelessWidget {
   final String city;
   final String weather;
@@ -252,10 +278,7 @@ class LocationWidget extends StatelessWidget {
           ),
           title: Text(
             city,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           subtitle: Text(
             weather,
@@ -263,10 +286,8 @@ class LocationWidget extends StatelessWidget {
           ),
           trailing: Text(
             "$degree°C",
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-            ),
+            style:
+                const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
           ),
         ),
       ),
