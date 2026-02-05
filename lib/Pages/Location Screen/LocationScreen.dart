@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:weatherrapp/Firebase/FireStore_Service.dart';
+import 'package:weatherrapp/Models/weatherModel.dart';
 
 class Locationscreen extends StatefulWidget {
   const Locationscreen({super.key});
@@ -8,6 +10,9 @@ class Locationscreen extends StatefulWidget {
 }
 
 class _LocationscreenState extends State<Locationscreen> {
+
+  List<Weathermodel>cities=[];
+  
   TextEditingController searchController = TextEditingController();
 
   @override
@@ -29,7 +34,14 @@ class _LocationscreenState extends State<Locationscreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: cities.isEmpty? 
+      Center(
+        child: Text("No Saved Cities",style: TextStyle(
+          fontSize: 30,
+          color: Colors.grey.shade600
+        ),),
+      )
+      :SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Container(
@@ -57,6 +69,22 @@ class _LocationscreenState extends State<Locationscreen> {
                   ),
                 ),
                 SizedBox(height: 15),
+                StreamBuilder<List<String>>(
+                  stream: FirestoreService().getSavedCities(), 
+                  builder: (context, snapshot) {
+                    if(!snapshot.hasData){
+                      Center(child: Text("No Saved Cities",style: TextStyle(color: Colors.grey.shade600,fontSize: 25),),);
+                    }
+                    final cities=snapshot.data!;
+                    return ListView.builder(
+                      itemCount: cities.length,
+                      itemBuilder: (context, index) {
+                        return LocationWidget(city: cities[index], weather: weather, degree: degree, icon: icon, color: color)
+                      },
+                      );
+                  },),
+
+
                 LocationWidget(city: 'London', weather: 'Cloudy', degree: '19', icon: Icons.cloud, color: Colors.blue,),
                 LocationWidget(city: "New York", weather: "Sunny", degree: "24", icon: Icons.wb_sunny, color: Colors.yellow),
                 LocationWidget(city: "Tokyo", weather: "Rainy", degree: "21", icon: Icons.grain, color: Colors.blue),
