@@ -221,7 +221,7 @@ class _LocationscreenState extends State<Locationscreen> {
         return Icons.wb_sunny;
       case 'clouds':
         return Icons.cloud;
-      case 'rai':
+      case 'rain':
         return Icons.grain;
       default:
         return Icons.cloud_queue;
