@@ -230,7 +230,7 @@ class _LocationscreenState extends State<Locationscreen> {
 
   MaterialColor _getWeatherColor(String condition) {
     switch (condition.toLowerCase()) {
-      case 'clea':
+      case 'clear':
         return Colors.orange;
       case 'rain':
         return Colors.blue;
