@@ -237,7 +237,7 @@ class _LocationscreenState extends State<Locationscreen> {
       case 'clouds':
         return Colors.blueGrey;
       default:
-        return Colors.gre;
+        return Colors.grey;
     }
   }
 }
