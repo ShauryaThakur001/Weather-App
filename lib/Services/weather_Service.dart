@@ -14,7 +14,9 @@ class WeatherService {
     final response = await http.get(Uri.parse('$BASE_URl?q=$cityName&appid=$apiKey&units=metric'));
 
     if(response.statusCode==200){
-      return Weathermodel.fromJson(jsonDecode(response.body));
+      final result=Weathermodel.fromJson(jsonDecode(response.body));
+      print("Error $result");
+      return result;
     }
     else{
       throw Exception("Failed to Load Weather Data");
